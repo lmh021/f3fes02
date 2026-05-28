@@ -1,0 +1,6 @@
+{
+  "name": "Form 3 Speaking Exam Dashboard",
+  "description": "Form 3 Final English Speaking Examination Attendance and Marks Dashboard with real-time undo, CSV export, and intuitive dark mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

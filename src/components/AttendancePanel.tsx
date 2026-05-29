@@ -34,7 +34,9 @@ export default function AttendancePanel({
   const classesList = ['All', '3A', '3B', '3C', '3D', '3E', '3F'];
 
   // Under current session, what are the groups? (e.g. groups [1, 2, 3])
-  const activeGroupNums = currentSession.groups;
+  const activeGroupNums = activeSessionId === 'ALL'
+    ? Array.from(new Set(students.map(s => s.group))).sort((a, b) => a - b)
+    : currentSession.groups;
 
   // Filter students based on current session's groups or name search
   const getStudentsInGroup = (groupNum: number) => {
@@ -60,7 +62,7 @@ export default function AttendancePanel({
   };
 
   // Get count helpers for progress indicators
-  const sessionStudents = students.filter(s => activeGroupNums.includes(s.group));
+  const sessionStudents = activeSessionId === 'ALL' ? students : students.filter(s => activeGroupNums.includes(s.group));
   const markedCount = sessionStudents.filter(s => s.attendance !== 'Unmarked').length;
   const totalCount = sessionStudents.length;
   const presentCount = sessionStudents.filter(s => s.attendance === 'Present').length;
@@ -146,6 +148,31 @@ export default function AttendancePanel({
           </div>
 
           <div className="grid grid-cols-5 sm:grid-cols-9 gap-1.5">
+            {/* ALL Session Selection Button */}
+            <button
+              onClick={() => setActiveSessionId('ALL')}
+              id="session-btn-all"
+              className={`relative py-2.5 rounded-xl font-mono text-sm font-bold flex flex-col items-center justify-center border transition ${
+                activeSessionId === 'ALL'
+                  ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                  : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800/80'
+              }`}
+            >
+              <span className="text-base leading-none">ALL</span>
+              <span className={`text-[9px] leading-none mt-1 ${activeSessionId === 'ALL' ? 'text-indigo-200' : 'text-slate-400 dark:text-slate-505'}`}>
+                Full Day
+              </span>
+              
+              {/* Attendance status dot */}
+              {students.some(s => s.attendance === 'Unmarked') ? (
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-yellow-500 rounded-full" />
+              ) : students.length > 0 && students.every(s => s.attendance === 'Absent') ? (
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full" />
+              ) : (
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+              )}
+            </button>
+
             {examSessions.map((session) => {
               const isActive = session.id === activeSessionId;
               // Check if any student in this group is unmarked
@@ -190,16 +217,33 @@ export default function AttendancePanel({
 
           {/* Active Session Mini Details */}
           <div className="bg-slate-50 dark:bg-slate-950/70 border border-slate-150 dark:border-slate-850 p-3.5 rounded-xl text-xs sm:text-sm flex flex-wrap items-center justify-between gap-3 text-slate-600 dark:text-slate-400">
-            <div>
-              <span className="font-semibold text-slate-850 dark:text-slate-200">Session {currentSession.id}</span>
-              <span className="mx-2">•</span>
-              Reporting: <strong className="text-slate-900 dark:text-indigo-400 font-mono">{currentSession.reportingTime}</strong>
-              <span className="mx-2">•</span>
-              Prep Window: <span className="font-mono">{currentSession.preparationTime}</span>
-            </div>
-            <div>
-              Active Rooms: <strong className="text-slate-850 dark:text-slate-200">5C (Grp {currentSession.groups[0]}), 5D (Grp {currentSession.groups[1]}), 5E (Grp {currentSession.groups[2]})</strong>
-            </div>
+            {activeSessionId === 'ALL' ? (
+              <>
+                <div>
+                  <span className="font-semibold text-slate-850 dark:text-slate-200">All Sessions Day View</span>
+                  <span className="mx-2">•</span>
+                  Reporting: <strong className="text-slate-900 dark:text-indigo-400 font-mono">08:00 – 12:15</strong>
+                  <span className="mx-2">•</span>
+                  Total Groups: <span className="font-mono font-bold">51 Groups</span>
+                </div>
+                <div>
+                  Active Rooms: <strong className="text-slate-850 dark:text-slate-200">Classrooms 5C, 5D, 5E</strong>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <span className="font-semibold text-slate-850 dark:text-slate-200">Session {currentSession.id}</span>
+                  <span className="mx-2">•</span>
+                  Reporting: <strong className="text-slate-900 dark:text-indigo-400 font-mono">{currentSession.reportingTime}</strong>
+                  <span className="mx-2">•</span>
+                  Prep Window: <span className="font-mono">{currentSession.preparationTime}</span>
+                </div>
+                <div>
+                  Active Rooms: <strong className="text-slate-850 dark:text-slate-200">5C (Grp {currentSession.groups[0]}), 5D (Grp {currentSession.groups[1]}), 5E (Grp {currentSession.groups[2]})</strong>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
